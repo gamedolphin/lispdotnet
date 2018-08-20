@@ -16,8 +16,14 @@ namespace LispDotNet {
                     var str = Nested.Aggregate("",(a,b) => $"{a} {b.Contents}");
                     return "{"+str+"}";
                 }
-                return "empty data list";
+                return "{}";
             }
+        }
+
+        public override LispNode GetNodeCopy() {
+            return new LispDataList {
+                Nested = this.Nested.Select(x => x.GetNodeCopy()).ToList()
+            };
         }
     }
 }

@@ -17,8 +17,9 @@ namespace LispDotNet {
     [SymbolAttribute("+")]
     public class LispAddSymbol : LispSymbol {
         public override string Contents { get; } = "+";
+        public override string Symbol { get; } = "+";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             LispNode err = null;
             if(LispNumberUtils.CheckIfAllNumbers(node, out err)) {
@@ -39,8 +40,9 @@ namespace LispDotNet {
     [SymbolAttribute("-")]
     public class LispSubtractSymbol : LispSymbol {
         public override string Contents { get; } = "-";
+        public override string Symbol { get; } = "-";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             LispNode err = null;
             if(LispNumberUtils.CheckIfAllNumbers(node, out err)) {
@@ -66,8 +68,9 @@ namespace LispDotNet {
     [SymbolAttribute("*")]
     public class LispMultiplySymbol : LispSymbol {
         public override string Contents { get; } = "*";
+        public override string Symbol { get; } = "*";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             LispNode err = null;
             if(LispNumberUtils.CheckIfAllNumbers(node, out err)) {
@@ -88,8 +91,9 @@ namespace LispDotNet {
     [SymbolAttribute("/")]
     public class LispDivideSymbol : LispSymbol {
         public override string Contents { get; } = "/";
+        public override string Symbol { get; } = "/";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             LispNode err = null;
             if(LispNumberUtils.CheckIfAllNumbers(node, out err)) {

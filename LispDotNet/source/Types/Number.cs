@@ -22,5 +22,9 @@
         public LispNumber(double num) {
             Number = num;
         }
+
+        public override LispNode GetNodeCopy() {
+            return new LispNumber(Number);
+        }
     }
 }

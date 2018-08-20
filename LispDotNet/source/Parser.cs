@@ -1,8 +1,10 @@
 ﻿using System;
 using Pidgin;
 using static Pidgin.Parser;
+using static Pidgin.Parser<char>;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace LispDotNet {
 
@@ -47,10 +49,18 @@ namespace LispDotNet {
             Parser<char,char> RPar = Char(')');
             Parser<char,char> LBrace = Char('{');
             Parser<char,char> RBrace = Char('}');
-            Parser<char,LispNode> Symbol = OneOf(SymbolDictionary.Keys
-                                                 .Select(ex => String(ex)))
-                .Select<LispNode>(ex =>  GetLispSymbol(ex));
+            Parser<char,char> Arithmetic = OneOf(Char('+'),Char('-'),Char('*'),Char('/'));
+            Parser<char,char> OtherChars = OneOf(Char('\\'),Char('='),Char('<'),Char('>'),Char('!'),Char('&'));
+
             Parser<char,LispNode> Num = Digit.AtLeastOnceString().Select<LispNode>(ex => new LispNumber (ex));
+
+            Parser<char,LispNode> Symbol = OneOf(Letter,
+                                                 Arithmetic,
+                                                 OtherChars)
+                .Then((OneOf(LetterOrDigit,Arithmetic,OtherChars)).ManyString(),
+                      (h,t) => h + t)
+                .Select<LispNode>(ex => new InputSymbol(ex));
+
             Parser<char,LispNode> List = null;
             Parser<char,LispNode> Data = null;
             Parser<char,LispNode> Atom = OneOf(Symbol,Num,Rec(() => List), Rec(() => Data));
@@ -70,81 +80,6 @@ namespace LispDotNet {
             Parser<char,LispNode> Expr = OneOf(Num,List,Data,Symbol);
 
             return Expr;
-        }
-
-        public static long GetTotalNodes (LispNode node) {
-            if(node.Nested == null || node.Nested.Count == 0)  return 1;
-
-            if(node.Nested?.Count >= 1) {
-                long total = 1;
-
-                node.Nested.ToList().ForEach(childNode => {
-                        total += GetTotalNodes(childNode);
-                    });
-
-                return total;
-            }
-
-            return 0;
-        }
-
-        public static LispNode Pop(this LispNode node) {
-            var p = node.Nested.First();
-            node.Nested.RemoveAt(0);
-            return p;
-        }
-
-        public static LispNode Join(LispNode x, LispNode y) {
-
-            while(y.Nested.Count > 0) {
-                x.Nested.Add(y.Pop());
-            }
-
-            y.Nested.Clear();
-
-            return x;
-        }
-
-        public static LispNode Take(this LispNode node, int index) {
-            var p = node.Nested[index];
-            node.Nested.Clear();
-            return p;
-        }
-
-        private static LispNode EvaluateExpr (LispNode node) {
-
-            node.Nested = node.Nested.ConvertAll(item => Evaluate(item));
-
-            if(node.Nested.Any(item => item is LispError)) {
-                var item = node.Nested.First(err => err is LispError);
-                node.Nested.Clear();
-                return item;
-            }
-
-            // Empty Expression
-            if(node.Nested.Count == 0) return node;
-
-            // Single value expression
-            if(node.Nested.Count == 1) return node.Pop();
-
-
-            var op = node.Pop() as LispSymbol;
-
-            if(op == null) {
-                node.Nested.Clear();
-                return new LispNotSymbolException();
-            }
-
-            return op.Operate(node);
-        }
-
-        public static LispNode Evaluate (LispNode node) {
-
-            if(node is LispList) {
-                return EvaluateExpr(node);
-            }
-
-            return node;
         }
     }
 }

@@ -7,12 +7,13 @@ namespace LispDotNet {
     [SymbolAttribute("list")]
     public class LispListSymbol : LispSymbol {
         public override string Contents { get; } = "list";
+        public override string Symbol { get; } = "list";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             var dnode = node as LispList;
 
-            if(dnode == null) return new LispIncorrectArgTypesException(Contents);
+            if(dnode == null) return new LispIncorrectArgTypesException(Contents,0,LispNodeType.LIST.ToString(),node.NodeType.ToString());
 
             return new LispDataList {
                 Nested = dnode.Nested
@@ -23,16 +24,17 @@ namespace LispDotNet {
     [SymbolAttribute("head")]
     public class LispHeadSymbol : LispSymbol {
         public override string Contents { get; } = "head";
+        public override string Symbol { get; } = "head";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             if(node.Nested.Count != 1) {
-                return new LispTooManyArgsException(Contents);
+                return new LispTooManyArgsException(Contents,1,node.Nested.Count);
             }
 
             var dnode = node.Nested[0] as LispDataList;
 
-            if(dnode == null) return new LispIncorrectArgTypesException(Contents);
+            if(dnode == null) return new LispIncorrectArgTypesException(Contents,0,LispNodeType.DATALIST.ToString(),node.NodeType.ToString());
 
             if(dnode.Nested.Count == 0) {
                 return new LispEmptyDataException(Contents);
@@ -51,16 +53,17 @@ namespace LispDotNet {
     [SymbolAttribute("tail")]
     public class LispTailSymbol : LispSymbol {
         public override string Contents { get; } = "tail";
+        public override string Symbol { get; } = "tail";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             if(node.Nested.Count != 1) {
-                return new LispTooManyArgsException(Contents);
+                return new LispTooManyArgsException(Contents,1,node.Nested.Count);
             }
 
             var dnode = node.Nested[0] as LispDataList;
 
-            if(dnode == null) return new LispIncorrectArgTypesException(Contents);
+            if(dnode == null) return new LispIncorrectArgTypesException(Contents,0,LispNodeType.DATALIST.ToString(),node.NodeType.ToString());
 
             if(dnode.Nested.Count == 0) {
                 return new LispEmptyDataException(Contents);
@@ -79,8 +82,9 @@ namespace LispDotNet {
     [SymbolAttribute("join")]
     public class LispJoinSymbol : LispSymbol {
         public override string Contents { get; } = "join";
+        public override string Symbol { get; } = "join";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             if(!node.Nested.All(item => item is LispDataList)) {
                 node.Nested.Clear();
@@ -90,7 +94,7 @@ namespace LispDotNet {
             var x = node.Pop();
 
             while(node.Nested.Count > 0) {
-                x = GrammarUtil.Join(x,node.Pop());
+                x = LispNodeUtils.Join(x,node.Pop());
             }
 
             return x;
@@ -100,23 +104,24 @@ namespace LispDotNet {
     [SymbolAttribute("eval")]
     public class LispEvalSymbol : LispSymbol {
         public override string Contents { get; } = "eval";
+        public override string Symbol { get; } = "eval";
 
-        public override LispNode Operate(LispNode node) {
+        public override LispNode Operate(LispEnvironment env,LispNode node) {
 
             if(node.Nested.Count != 1) {
-                return new LispTooManyArgsException(Contents);
+                return new LispTooManyArgsException(Contents,1,node.Nested.Count);
             }
 
-            var dnode = node.Nested[0] as LispDataList;
+            var dnode = node.Take(0) as LispDataList;
 
-            if(dnode == null) return new LispIncorrectArgTypesException(Contents);
+            if(dnode == null) return new LispIncorrectArgTypesException(Contents,0,LispNodeType.DATALIST.ToString(),node.NodeType.ToString());
 
 
             var x = new LispList {
-                Nested = node.Take(0).Nested
+                Nested = dnode.GetNodeCopy().Nested
             };
 
-            return GrammarUtil.Evaluate(x);
+            return Interpreter.Evaluate(env,x);
         }
     }
 }

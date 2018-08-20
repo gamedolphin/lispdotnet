@@ -2,7 +2,7 @@
     public enum LispErrorType {
         DIV_BY_ZERO, NOT_NUMBER, NOT_SYMBOL, EMPTY_LIST,
         NOT_DATA_LIST, TOO_MANY_ARGS, INCORRECT_ARG_TYPES,
-        EMPTY_DATA
+        EMPTY_DATA, DEFINE_NON_SYMBOL, INCORRECT_ARGS_FOR_DEFINE
     }
 
     public abstract class LispError : LispNode {
@@ -22,20 +22,28 @@
                 return $"Error: {ErrorMessage}";
             }
         }
+
+        public override LispNode GetNodeCopy() {
+            return this;
+        }
     }
 
     public class LispTooManyArgsException : LispError {
         public override LispErrorType ErrorType { get; } = LispErrorType.TOO_MANY_ARGS;
 
         private string name;
+        private int expected;
+        private int got;
 
-        public LispTooManyArgsException(string fName) {
+        public LispTooManyArgsException(string fName, int _expected, int _got) {
             name = fName;
+            expected = _expected;
+            got = _got;
         }
 
         protected override string ErrorMessage {
             get {
-                return $"Function {name} passed too many arguments";
+                return $"Function {name} passed incorrect number of arguments. Expected {expected}, got {got}";
             }
         }
     }
@@ -44,14 +52,20 @@
         public override LispErrorType ErrorType { get; } = LispErrorType.INCORRECT_ARG_TYPES;
 
         private string name;
+        private int argumentIndex;
+        private string expectedArgument;
+        private string gotArgument;
 
-        public LispIncorrectArgTypesException(string fName) {
+        public LispIncorrectArgTypesException(string fName,int index, string _expected, string _got) {
             name = fName;
+            argumentIndex = index;
+            expectedArgument = _expected;
+            gotArgument = _got;
         }
 
         protected override string ErrorMessage {
             get {
-                return $"Function {name} passed incorrect argument types";
+                return $"Function {name} passed incorrect argument type for {argumentIndex}. Expected {expectedArgument}, got {gotArgument}";
             }
         }
     }
@@ -105,9 +119,15 @@
             }
         }
 
+        private string sym;
+
+        public LispNotSymbolException(string s = "") {
+            sym = s;
+        }
+
         protected override string ErrorMessage {
             get {
-                return "First atom in list is not a symbol, cannot evaluate";
+                return $"First atom {sym} in list is not a symbol, cannot evaluate";
             }
         }
     }

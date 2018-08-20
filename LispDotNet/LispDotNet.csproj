@@ -56,13 +56,19 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="source\Environment.cs" />
     <Compile Include="source\ErrorHandling\ErrorTypes.cs" />
+    <Compile Include="source\Interpreter.cs" />
     <Compile Include="source\Operators\Data\Data.cs" />
     <Compile Include="source\Operators\Data\DataErrors.cs" />
+    <Compile Include="source\Operators\Function\Function.cs" />
+    <Compile Include="source\Operators\Function\FunctionErrors.cs" />
     <Compile Include="source\Operators\Math\Arithmetic.cs" />
     <Compile Include="source\Operators\Print.cs" />
+    <Compile Include="source\Operators\Variables\Variable.cs" />
     <Compile Include="source\Parser.cs" />
     <Compile Include="source\Types\DataList.cs" />
+    <Compile Include="source\Types\Function.cs" />
     <Compile Include="source\Types\List.cs" />
     <Compile Include="source\Types\Node.cs" />
     <Compile Include="source\Types\Number.cs" />

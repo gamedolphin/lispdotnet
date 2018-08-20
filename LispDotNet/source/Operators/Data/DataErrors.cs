@@ -1,5 +1,5 @@
 namespace LispDotNet {
-    public class LispEmptyDataException : LispError {
+    public class    LispEmptyDataException : LispError {
         public override LispErrorType ErrorType {
             get {
                 return LispErrorType.EMPTY_DATA;

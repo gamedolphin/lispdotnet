@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Pidgin;
-using static Pidgin.Parser;
-using System.Linq;
 
 namespace LispDotNet {
+
+    using static Interpreter;
+    using static GrammarUtil;
+    using static EnvUtils;
 
     class Program {
 
@@ -15,7 +16,8 @@ namespace LispDotNet {
             string input;
             // List<string> history = new List<string>();
 
-            var p = GrammarUtil.GetParser ();
+            var env = GetEnvironment();
+            var p = GetParser ();
 
             while(true) {
                 Console.Write("LispDotNet>");
@@ -26,7 +28,7 @@ namespace LispDotNet {
 
                 try {
                      var c = p.ParseOrThrow(input);
-                     Console.WriteLine(GrammarUtil.Evaluate(c));
+                     Console.WriteLine(Evaluate(env,c));
                 }
                 catch(Exception ex) {
                     Console.WriteLine(ex);
